@@ -1,203 +1,233 @@
 # Языки программирования
-python
-r
-sql
-scala
+1c
+c
+c#
+c++
+go
+java
+javascript
+js
 julia
+lisp
+perl
+php
+python
+ruby
+rust
+scala
+ts
+typescript
+
+# Web 
+html
+html5
+nginx
+apache
+OSI
 
 # Базы данных
-postgresql
-mysql
-sqlite
-mongodb
-redis
-clickhouse
 cassandra
-oracle
-mssql
-snowflake
+clickhouse
 databricks
+mongodb
+mssql
+mysql
+oracle
+postgresql
+redis
+snowflake
+sql
+sqlite
 
 # Системы контроля версий
 git
-svn
 mercurial
+svn
 
 # Контейнеризация и оркестрация
 docker
-kubernetes
-podman
-openshift
 helm
+k8s
+kubernetes
+openshift
+podman
 
 # Обработка данных (Python)
-pandas
-numpy
-polars
 dask
-pyarrow
-modin
 datatable
+modin
+numpy
+pandas
+polars
+pyarrow
 
 # Визуализация
-matplotlib
-seaborn
-plotly
-bokeh
 altair
-ggplot
-geopandas
+bokeh
 folium
+geopandas
+ggplot
 holoviews
+matplotlib
+plotly
+seaborn
 
 # ML/DL библиотеки
-scikit-learn
-pytorch
-tensorflow
-keras
-xgboost
-lightgbm
-catboost
-optuna
-hyperopt
-ray
-mlflow
-wandb
 aim
+anthropic
+azure ml
+catboost
 comet
-polyaxon
-huggingface transformers
-sentence-transformers
 faiss
 haystack
+huggingface transformers
+hyperopt
+keras
 langchain
+lightgbm
 llamaindex
+mlflow
 openai
-anthropic
-vertex ai
-azure ml
+optuna
+polyaxon
+pytorch
+ray
 sagemaker
+scikit-learn
+sentence-transformers
+tensorflow
+vertex ai
+wandb
+xgboost
 
 # NLP
-nltk
-spacy
-gensim
-stanford corenlp
 bert
-roberta
-gpt
-t5
-llm
-rag
-prompt engineering
-natural language processing
-text mining
-topic modeling
-word embeddings
-word2vec
 doc2vec
+gensim
+gpt
+llm
+natural language processing
+nltk
+prompt engineering
+rag
+roberta
+spacy
+stanford corenlp
+t5
+text mining
 tf-idf
+topic modeling
+word2vec
+word embeddings
 
 # Computer Vision
+albumentations
+detectron2
+image processing
 opencv
 pillow
 scikit-image
-albumentations
-detectron2
-yolo
 segment anything
-image processing
+yolo
 
 # Статистика и анализ
-scipy
-statsmodels
-pingouin
-arviz
-pymc3
-stan
-bayesian inference
-hypothesis testing
 anova
-regression
+arviz
+bayesian inference
 clustering
 dimensionality reduction
+hypothesis testing
 pca
+pingouin
+pymc3
+regression
+scipy
+stan
+statsmodels
 tsne
 umap
 
 # ETL / Pipelines
 airflow
-prefect
-luigi
-kedro
+apache beam
+celery
+dagster
 dbt
 elt
 etl
 kafka
+kedro
+luigi
+prefect
 rabbitmq
-celery
-apache beam
-dagster
 zenlytic
 
 # Big Data
-spark
-hadoop
-hive
-pig
-mapreduce
 databricks
 delta lake
 emr
 flink
+hadoop
+hive
+mapreduce
+pig
+spark
 storm
 
 # Облачные платформы
+app engine
 aws
 azure
-gcp
-snowflake
-databricks
-kaggle
-sagemaker
-lambda
-ec2
-s3
-glue
-emr
-bigquery
-vertex ai
 azure ml studio
-synapse
-cosmos db
-data factory
-storage account
+bigquery
 cloud functions
-app engine
 compute engine
+cosmos db
+databricks
+data factory
+ec2
+emr
+gcp
+glue
+kaggle
+lambda
+s3
+sagemaker
+snowflake
+storage account
+synapse
+vertex ai
+yandexcloud
 
 # Операционные системы / Shell
-linux
 bash
-shell scripting
-zsh
-powershell
-terminal
+cli
 command line
+fish
+linux
+powershell
+shell scripting
+terminal
+zsh
+#
+alt
+centos
+debian
+ubuntu
 
 # Языки и форматы данных
-json
-yaml
-xml
+avro
 csv
-parquet
-hdf5
 feather
+hdf5
+json
 msgpack
+orc
+parquet
 protobuf
 toml
-avro
-orc
+xml
+yaml
 
 # API / Web
 api
@@ -220,189 +250,194 @@ oauth
 jwt
 
 # Математика
-linear algebra
 calculus
-statistics
-probability theory
-optimization
-gradient descent
 convex optimization
+gradient descent
+linear algebra
+optimization
+probability theory
+statistics
 
 # Машинное обучение
-ml
-dl
-ai
-machine learning
-deep learning
-artificial intelligence
-supervised learning
-unsupervised learning
-reinforcement learning
-semi-supervised learning
+ab testing
+accuracy
 active learning
-online learning
-transfer learning
+ai
+artificial intelligence
+auc
+bias-variance tradeoff
+canary release
+confusion matrix
+cross-validation
+deep learning
+dl
 ensemble methods
+evaluation metrics
+f1 score
 feature engineering
 feature selection
-cross-validation
-model selection
 hyperparameter tuning
+machine learning
+ml
+mlops
+model deployment
+model drift
+model monitoring
+model selection
+model serving
+online learning
 overfitting
-underfitting
-bias-variance tradeoff
-evaluation metrics
-accuracy
 precision
 recall
-f1 score
-auc
+reinforcement learning
 roc
-confusion matrix
-model deployment
-model serving
-mlops
-model monitoring
-model drift
-ab testing
-canary release
+semi-supervised learning
+supervised learning
+transfer learning
+underfitting
+unsupervised learning
 
 # Data Analysis
+ccpa
 data analysis
+data catalog
 data cleaning
+data ethics
+data governance
+data lineage
 data preprocessing
-data wrangling
+data privacy
 data profiling
 data quality
 data validation
-data governance
-data lineage
-data catalog
-data ethics
-data privacy
+data wrangling
 gdpr
-ccpa
 
 # BI / Визуализация данных
-tableau
-power bi
+cognos
 looker
 metabase
-superset
-redash
-qlikview
-cognos
 microstrategy
 plotly dash
+power bi
+qlikview
+redash
 streamlit
+superset
+tableau
 
 # Прочие технологии
-jupyter
-notebook
-jupyterlab
-colab
-kaggle
-latex
-regex
-regexps
-vim
-emacs
-vscode
-pycharm
+amd rocm
 anaconda
-miniconda
-virtual environment
+asyncio
+colab
+concurrency
 conda
-pip
-poetry
-pipenv
-pytest
-unittest
-mock
-logging
-debugging
-profiling
-memory management
-gpu
 cuda
 cuDNN
-tensorrt
-onnx
-triton
-openvino
-intel oneapi
-nvidia
-amd rocm
-tpu
+debugging
 distributed computing
-parallel processing
+emacs
+gpu
+intel oneapi
+jupyter
+jupyterlab
+kaggle
+latex
+logging
+memory management
+miniconda
+mock
 multiprocessing
-threading
-asyncio
-concurrency
+neovim
+notebook
+nvidia
+nvim
+onnx
+openvino
 parallelism
+parallel processing
+pip
+pipenv
+poetry
+profiling
+pycharm
+pytest
+regex
+regexps
+tensorrt
+threading
+tpu
+triton
+unittest
+vi
+vim
+virtual environment
+vscode
 
 # Методы и алгоритмы
-logistic regression
-svm
-decision trees
-random forest
-gradient boosting
-neural networks
-cnn
-rnn
-lstm
-gru
+anomaly detection
+arima
 autoencoders
-vae
-gan
-diffusion models
-graph neural networks
-recommender systems
+cnn
 collaborative filtering
 content-based filtering
-matrix factorization
-anomaly detection
-outlier detection
-time series
-arima
-prophet
-lstm forecasting
-seasonal decomposition
+decision trees
+diffusion models
 fourier transform
-signal processing
-monte carlo
-simulation
-optimization algorithms
+gan
 genetic algorithm
+gradient boosting
+graph neural networks
+gru
+logistic regression
+lstm
+lstm forecasting
+matrix factorization
+monte carlo
+neural networks
+optimization algorithms
+outlier detection
+prophet
+random forest
+recommender systems
+rnn
+seasonal decomposition
+signal processing
 simulated annealing
+simulation
+svm
+time series
+vae
+
 
 # DevOps / MLOps
-mlops
+alibi
+argo
+bias detection
+captum
 ci/cd
+clearml
+containerization
+dagshub
+experiment tracking
+fairness
+feature store
 github actions
 gitlab ci
 jenkins
-argo
-tekton
-model versioning
-experiment tracking
-model registry
-feature store
-model monitoring
-model explainability
-shap
-lime
-alibi
-captum
-fairness
-bias detection
-reproducibility
-containerization
-orchestration
 kubeflow
+lime
 mlflow
-dagshub
+mlops
+model explainability
+model monitoring
+model registry
+model versioning
 neptune
-clearml
+orchestration
 polyaxon
+reproducibility
+shap
+tekton
+
