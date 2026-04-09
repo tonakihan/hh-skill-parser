@@ -11,45 +11,49 @@ from bs4 import BeautifulSoup
 import os
 import json
 import argparse
-
-# Сколько навыков отобразить на графике
-TOP_N_SHOW_ON_PLOT = 50
-
-# Сколько максимально листов обрабатывать по каждому из запросов (20 максимально)
-MAX_PARSE_PAGES = 20
-
-# Регион поиска
-AREA = 1
-# Москва = 1
-# Полный список тут https://api.hh.ru/areas
+import math
 
 # Вывести уже обработанные данные (для отладки, не парсить так как долго)
 OPTION_SKIP_PARSING = True
 
-def get_vacancies(query, area, pages=20):
+def get_vacancies(query, area, vacancies_limit=2000):
     """
     Собирает вакансии с HH.ru по заданному запросу.
 
     Args:
         query (str): Поисковый запрос (например, 'data scientist', 'machine learning').
         area (int): ID региона (например, 1 — Москва).
-        pages (int, optional): Количество страниц для обхода. Максимум ~20 (ограничение HH). Defaults to 20.
+        vacancies_limit (int, optional):
+            Ограничение по количеству вакансий. (value: 1 ~ 2000 [орграничение API HH])
 
     Returns:
         list: Список вакансий в формате JSON (каждая вакансия — словарь).
               Возвращает пустой список в случае ошибки или отсутствия вакансий.
     """
+    #API: https://api.hh.ru/openapi/redoc#tag/Poisk-vakansij/operation/get-vacancies
     base_url = 'https://api.hh.ru/vacancies'
     params = {
         'text': query,
         'area': area,
         'per_page': 100,
-        'page': 0
+        'page': 0,
+        'search_fiels': "name"
     }
 
+    # Ограничение кол-ва запросов
+    pages_total = 0
+    if vacancies_limit > 2000:
+        print(
+            'WARNING: Ограничение по количеству вакансий API hh.ru в 2000. '
+            'Выбрано максимально допустимое значение')
+        vacancies_limit = 2000
+    elif vacancies_limit <= 0:
+        raise Exception("CRITICAL_ERROR: vacancies_limit должно быть натуральным числом.")
+    pages_total = math.ceil(vacancies_limit / params['per_page'])
+
     all_vacancies = []
-    for page_num in range(pages):
-        params['page'] = page_num
+    for page_current in range(pages_total):
+        params['page'] = page_current
         try:
             response = requests.get(base_url, params=params)
             response.raise_for_status()
@@ -58,8 +62,9 @@ def get_vacancies(query, area, pages=20):
             if not items:
                 break
             all_vacancies.extend(items)
-            print(f"Обработана страница {page_num + 1} по запросу '{query}'")
-            time.sleep(random.uniform(0.5, 1.0))  # задержка чтоб не быть забанеными сервером удаленным, не наглеем :)
+            print(f"Обработана страница {page_current + 1} по запросу '{query}'")
+            # задержка чтоб не быть забанеными сервером удаленным, не наглеем :)
+            time.sleep(random.uniform(0.5, 1.0))
 
         except requests.exceptions.RequestException as e:
             print(f"Ошибка при запросе: {e}")
@@ -170,26 +175,31 @@ def load_progress(progress_file):
             return json.load(f)
     return {}
 
-
-SKILL_WHITELIST = load_skills_whitelist() # считываем все искомые слова из файла
-
 def cli_parse():
     """
-        Парсит аргументы командной строки.
+    Парсит аргументы командной строки.
 
-        Returns:
-            argparse.Namespace:
-                area (int): Зона поиска (из hh.ru)
-                output (str): Целевой файл для записи конечного результата
-                count_vacan (int): Кол-во вакансий
-                count_skill (int):
-        """
+    Returns:
+        argparse.Namespace:
+            area (int): Зона поиска (API HH)
+            output (str): Целевой файл для записи конечного результата
+            vacancies_limit (int):
+                Ограничение кол-ва вакансий на каждый поисковой запрос
+            skills_show_count (int):
+                Ограничение кол-ва навыков для отображения в конечном
+                результате (графике)
+    """
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         description=(
             'Программа собирает вакансии с сайта [HH.ru](https://hh.ru) по '
             'ключевым запросам (например, "DataScience", "ML Engineer"), извлекает '
             'из них **технические навыки**, и строит столбчатую диаграмму самых '
             'популярных навыков.'
+            '\n\n'
+            'конфигурационные файлы:\n'
+            '  queries.txt — список ключевых запросов для поиска вакансий\n'
+            '  skills_whitelist.txt — список навыков для анализа'
     ))
 
     parser.add_argument('-o', '--output',
@@ -204,15 +214,13 @@ def cli_parse():
             'Найти можно тут https://api.hh.ru/areas. (по умолчанию %(default)s)'
     ))
 
-    parser.add_argument('--count-vacan',
+    parser.add_argument('--vacancies-limit',
+        dest="vacancies_limit",
         type=int,
-        default=-1,
-        help=(
-            'Ограничение на количество вакансий для обработки. '
-            'Отключение опции -1. (%(default)s)'
-    ))
+        default=2000,
+        help='Ограничение на количество вакансий для обработки. (%(default)s)')
 
-    parser.add_argument('--count-skill',
+    parser.add_argument('--skills-show-count', '--skills-count',
         type=int,
         default=50,
         help='Количество отображаемых навыков в графике (%(default)s)')
@@ -221,13 +229,11 @@ def cli_parse():
 
 def main():
     settings = cli_parse();
-    #TODO: cli_parse:
-        # area=1
-        # output='hh_skills_bar_chart.png'
-        # count_vacan=50
-        # count_skill=50
     queries = load_queries()
     progress_file = 'progress.json'
+
+    # считываем все искомые слова из файла
+    skill_whitelist = load_skills_whitelist()
 
     # Загружаем прогресс
     progress = load_progress(progress_file)
@@ -241,10 +247,14 @@ def main():
 
         print("Начинаю сбор вакансий...")
         for q in queries:
-            vacancies = get_vacancies(q, area=AREA, pages=MAX_PARSE_PAGES)
+            vacancies = get_vacancies(
+                q,
+                area=settings.area,
+                vacancies_limit=settings.vacancies_limit
+            )
             query_vacancy_map[q] = vacancies
             total_to_process += len(vacancies)
-            print(f"Найдено вакансий по '{q}': {len(vacancies)}")
+            print(f"Загружено вакансий по запросу '{q}': {len(vacancies)}")
 
         print(f"\nВсего вакансий для обработки: {total_to_process}\n")
 
@@ -268,7 +278,7 @@ def main():
                     desc_html = data.get('description', '')
                     soup = BeautifulSoup(desc_html, 'html.parser')
                     text = soup.get_text()
-                    tech_skills = extract_technical_skills(text, SKILL_WHITELIST)
+                    tech_skills = extract_technical_skills(text, skill_whitelist)
 
                     # Обновляем счётчики
                     for skill in tech_skills:
@@ -297,7 +307,7 @@ def main():
     sorted_skills = dict(sorted(skill_counter.items(), key=lambda x: x[1], reverse=True))
 
     # Ограничим до топ-N для графика
-    top_n = dict(list(sorted_skills.items())[:TOP_N_SHOW_ON_PLOT])
+    top_n = dict(list(sorted_skills.items())[:settings.skills_show_count])
 
     # Сохраним весь список в файл на диск
     top_all = dict(list(sorted_skills.items()))
@@ -308,7 +318,7 @@ def main():
     df_all.to_csv(df_all_filename, index=False)
     print(f"\nВесь отсортированный список сохранен в файл {df_all_filename}")
 
-    print(f"\nТоп-{TOP_N_SHOW_ON_PLOT} навыков:")
+    print(f"\nТоп-{settings.skills_show_count} навыков:")
     for skill, count in top_n.items():
         print(f"{skill}: {count}")
 
@@ -336,8 +346,8 @@ def main():
     plt.title("Частота упоминаний навыков в вакансиях (HH.ru)", fontsize=16, pad=20)
     plt.xlabel("Количество упоминаний", fontsize=14)
     plt.ylabel("Навыки", fontsize=14)
-    plt.savefig("hh_skills_bar_chart.png", dpi=150, bbox_inches='tight')
-    print("\nГрафик сохранён как 'hh_skills_bar_chart.png'")
+    plt.savefig(settings.output, dpi=150, bbox_inches='tight')
+    print(f"\nГрафик сохранён как '{settings.output}'")
 
 if __name__ == "__main__":
     main()
