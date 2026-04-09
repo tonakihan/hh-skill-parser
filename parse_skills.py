@@ -55,9 +55,7 @@ def get_vacancies(query, area, vacancies_limit=2000):
     for page_current in range(pages_total):
         params['page'] = page_current
         try:
-            response = requests.get(base_url, params=params)
-            response.raise_for_status()
-            data = response.json()
+            data = fetch_data(base_url, params)
             items = data.get('items', [])
             if not items:
                 break
@@ -85,7 +83,6 @@ def load_skills_whitelist(path="skills_whitelist.txt"):
 
     Returns:
         set: Множество навыков (в нижнем регистре).
-             Если файл не найден, возвращается стандартный набор навыков.
     """
     try:
         with open(path, encoding='utf-8') as f:
@@ -97,25 +94,11 @@ def load_skills_whitelist(path="skills_whitelist.txt"):
         return set(lines)
 
     except FileNotFoundError:
-        # Возвращаем дефолтный список, если файла нет
-        default_skills = {
-            "python", "sql", "postgresql", "mysql", "git", "docker",
-            "kubernetes", "tensorflow", "pytorch", "scikit-learn",
-            "pandas", "numpy", "opencv", "nltk", "spacy", "bert",
-            "transformers", "faiss", "elasticsearch", "airflow",
-            "spark", "hadoop", "aws", "azure", "gcp", "linux", "bash",
-            "c++", "java", "javascript", "react", "vue", "flask",
-            "django", "fastapi", "ml", "dl", "ai", "computer vision",
-            "natural language processing", "data analysis", "etl",
-            "pipeline", "jupyter", "notebook", "latex", "graphql",
-            "rest", "api", "json", "yaml", "protobuf", "onnx",
-            "triton", "llm", "rag", "prompt engineering"
-        }
-        return default_skills
+        return set([])
 
-def extract_technical_skills(text, skill_whitelist):
+def extract_skills(text, skill_whitelist):
     """
-    Извлекает технические навыки из текста описания вакансии.
+    Извлекает навыки из текста (прим. описание вакансии).
 
     Производит поиск по переданному списку навыков (skill_whitelist),
     регистронезависимо. Поддерживает многословные навыки (например, 'computer vision'),
@@ -123,7 +106,7 @@ def extract_technical_skills(text, skill_whitelist):
     (например, 'vision' внутри 'computer vision').
 
     Args:
-        text (str): Текст описания вакансии.
+        text (str): Текст (прим. описание вакансии).
         skill_whitelist (set or list): Множество или список допустимых навыков.
 
     Returns:
@@ -163,15 +146,15 @@ def load_queries(path="queries.txt"):
     except FileNotFoundError:
         return ["DataScience", "Machine Learning", "ML Engineer", "Data Scientist", "AI Specialist"]
 
-def save_progress(progress_file, progress_data):
+def save_progress(data, file_path="progress.json"):
     """Сохраняет текущий прогресс в JSON-файл."""
-    with open(progress_file, 'w', encoding='utf-8') as f:
-        json.dump(progress_data, f, ensure_ascii=False, indent=2)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
-def load_progress(progress_file):
+def load_progress(path="progress.json"):
     """Загружает прогресс из JSON-файла, если существует."""
-    if os.path.exists(progress_file):
-        with open(progress_file, 'r', encoding='utf-8') as f:
+    if os.path.exists(path):
+        with open(path, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {}
 
@@ -190,53 +173,104 @@ def cli_parse():
                 результате (графике)
     """
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.RawTextHelpFormatter,
         description=(
-            'Программа собирает вакансии с сайта [HH.ru](https://hh.ru) по '
-            'ключевым запросам (например, "DataScience", "ML Engineer"), извлекает '
-            'из них **технические навыки**, и строит столбчатую диаграмму самых '
-            'популярных навыков.'
+            'Программа собирает вакансии с сайта https://hh.ru по ключевым '
+            'запросам (например, "DataScience", "ML Engineer"), извлекает '
+            'из них **навыки**, и строит столбчатую диаграмму самых '
+            'популярных навыков'
             '\n\n'
             'конфигурационные файлы:\n'
             '  queries.txt — список ключевых запросов для поиска вакансий\n'
-            '  skills_whitelist.txt — список навыков для анализа'
+            '  skills_whitelist.txt — список навыков для анализа [только для --mode description]'
     ))
 
     parser.add_argument('-o', '--output',
         default='hh_skills_bar_chart.png',
         help='Файл для вывода результата (%(default)s)')
 
-    parser.add_argument('--area',
+    parser.add_argument('-a', '--area',
         type=int,
         default=1,
         help=(
             'ID города/региона поиска вакансий. '
-            'Найти можно тут https://api.hh.ru/areas. (по умолчанию %(default)s)'
+            'Найти можно тут -> https://api.hh.ru/areas (по умолчанию %(default)s)'
     ))
 
     parser.add_argument('--vacancies-limit',
         dest="vacancies_limit",
         type=int,
         default=2000,
-        help='Ограничение на количество вакансий для обработки. (%(default)s)')
+        help='Ограничение на количество вакансий для обработки (%(default)s)')
 
     parser.add_argument('--skills-show-count', '--skills-count',
         type=int,
         default=50,
         help='Количество отображаемых навыков в графике (%(default)s)')
 
+    parser.add_argument('-m', '--mode',
+        default='key-skills',
+        choices=['key-skills', 'description'],
+        help=(
+            'Режим key-skills просматривает соответствующее поле в запросе и '
+            'строит график популярности навыков без зависимости от конфигурационного '
+            'файла skills_whitelist.txt \n'
+            'Режим description анализирует текст описания вакансий и требует skills_whitelist.txt\n'
+            '(key-skills)'
+    ))
+
     return parser.parse_args()
 
-def main():
-    settings = cli_parse();
-    queries = load_queries()
-    progress_file = 'progress.json'
+def fetch_data(url, params={}):
+    """
+    Args:
+        url (str): Url запрос
+        params (object_query_params, optional): Параметры запроса. Query params.
 
-    # считываем все искомые слова из файла
+    Returns:
+        object: Полезные данные в случае успеха
+    """
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+    data = response.json()
+    return data
+
+def get_skills_from_description(data):
+    """
+    Извлекает данные из поля description (API HH)
+
+    Returns:
+        list (str): Список навыков
+    """
     skill_whitelist = load_skills_whitelist()
+    if not skill_whitelist:
+        raise Exception('CRITICAL_ERROR: Нет данных в файле "skills_whitelist.txt"')
 
+    desc_html = data.get('description', '')
+    soup = BeautifulSoup(desc_html, 'html.parser')
+    text = soup.get_text()
+    skills = extract_skills(text, skill_whitelist)
+    return skills
+
+def get_skills_from_key_skills(data):
+    """
+    Извлекает данные из поля key_skills (API HH)
+
+    Returns:
+        list (str): Список навыков
+    """
+    key_skills = data.get('key_skills')
+    skills = [item['name'] for item in key_skills];
+    return skills
+
+def main():
+    # Настройка параметров (конфигурация)
+    settings = cli_parse()
+    queries = load_queries()
+
+    #FIXME: Ошибка - при смене mode не изменяются результаты
     # Загружаем прогресс
-    progress = load_progress(progress_file)
+    progress = load_progress()
     processed_ids = set(progress.get('processed_vacancy_ids', []))
     skill_counter = Counter(progress.get('current_skill_counts', {}))
 
@@ -272,23 +306,27 @@ def main():
 
                 url = f'https://api.hh.ru/vacancies/{vid}'
                 try:
-                    response = requests.get(url)
-                    response.raise_for_status()
-                    data = response.json()
-                    desc_html = data.get('description', '')
-                    soup = BeautifulSoup(desc_html, 'html.parser')
-                    text = soup.get_text()
-                    tech_skills = extract_technical_skills(text, skill_whitelist)
+                    data = fetch_data(url)
+                    skills = None
+                    match settings.mode:
+                        case "description":
+                            skills = get_skills_from_description(data)
+                        case "key-skills":
+                            skills = get_skills_from_key_skills(data)
+                        case _:
+                            raise Exception(
+                                "CRITICAL_ERROR: CLI --mode -> Отсутствует handler."
+                            )
 
                     # Обновляем счётчики
-                    for skill in tech_skills:
+                    for skill in skills:
                         skill_counter[skill] += 1
 
                     # Отмечаем вакансию как обработанную
                     processed_ids.add(vid)
 
                     # Сохраняем прогресс
-                    save_progress(progress_file, {
+                    save_progress({
                         'processed_vacancy_ids': list(processed_ids),
                         'current_skill_counts': dict(skill_counter)
                     })
