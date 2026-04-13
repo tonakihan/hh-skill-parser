@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 OPTION_SKIP_PARSING = False
 
 
-@animate
+@animate(start="Поиск вакансий")
 def get_vacancies(query, area, vacancies_limit=2000):
     """
     Собирает вакансии с HH.ru по заданному запросу.
@@ -328,6 +328,7 @@ def save_result_csv(sorted_skills, file_path="top_skills_all_data.csv"):
     logger.info(f"Весь отсортированный список сохранен в файл {file_path}")
 
 
+@animate(start="Построение графика")
 def save_result_chart(sorted_skills, skills_show_count, file_path):
     # Ограничим до топ-N для графика
     n = skills_show_count
@@ -393,7 +394,7 @@ def main():
     else:
         processed_ids = set()
         skill_counter = Counter()
-        logger.info("Progress отсутствует.")
+        logger.info("Progress отсутствует")
 
     # Парсинг
     if not OPTION_SKIP_PARSING:
@@ -423,9 +424,14 @@ def main():
 
                 logger.info(f'\tОбработка вакансии "{name}"')
 
+                # Проверка на дублирование элемента
+                if id in processed_ids:
+                    logger.info("\tПропуск вакансии. Была ранее обработана")
+                    continue
+
                 # Фильтр
                 split_query = re.split("\\s|-", query)
-                # Мягкий отсев - должно совпать хотя бы одно слово
+                # Мягкий отсев - должно совпасть хотя бы одно слово
                 regex_query = f"({'|'.join(split_query)})"
                 if not re.search(regex_query, name, re.I):
                     logger.info("\tОтсев этой вакансии")
@@ -434,7 +440,6 @@ def main():
                 # Получение скилов
                 try:
                     data = fetch_data(url)
-                    skills = None
                     match settings.mode:
                         case "description":
                             skills = get_skills_from_description(data)
@@ -450,7 +455,6 @@ def main():
                         skill_counter[skill] += 1
 
                     processed_ids.add(id)
-
                     # FIXME: НАСИЛУЮТ ДИСК!!!
                     save_progress(
                         {
@@ -460,11 +464,17 @@ def main():
                             "current_skill_counts": dict(skill_counter),
                         }
                     )
+                    # Задержка между запросами (Не допустить перегрев сервера)
+                    time.sleep(0.5)
 
                 except Exception as e:
+                    # FIXME: Выпадают вакансии
                     logger.error(
                         f"Неудачная попытка извлечения навыков из вакансии. Error: {e}"
                     )
+                    # Задержка между запросами
+                    logger.info("Жду охлаждения сервера...")
+                    time.sleep(random.uniform(60, 80))
                     continue
 
     logger.info("Вакансии обработаны. ")
