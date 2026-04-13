@@ -384,11 +384,16 @@ def main():
     settings = cli_parse()
     queries = load_queries()
 
-    # FIXME: Ошибка - при смене mode не изменяются результаты
     # Загружаем прогресс
     progress = load_progress()
-    processed_ids = set(progress.get("processed_vacancy_ids", []))
-    skill_counter = Counter(progress.get("current_skill_counts", {}))
+    if progress.get("queries") == queries and progress.get("mode") == settings.mode:
+        processed_ids = set(progress.get("processed_vacancy_ids", []))
+        skill_counter = Counter(progress.get("current_skill_counts", {}))
+        logger.info("Успешно загружен progress")
+    else:
+        processed_ids = set()
+        skill_counter = Counter()
+        logger.info("Progress отсутствует.")
 
     # Парсинг
     if not OPTION_SKIP_PARSING:
@@ -446,8 +451,11 @@ def main():
 
                     processed_ids.add(id)
 
+                    # FIXME: НАСИЛУЮТ ДИСК!!!
                     save_progress(
                         {
+                            "queries": queries,
+                            "mode": settings.mode,
                             "processed_vacancy_ids": list(processed_ids),
                             "current_skill_counts": dict(skill_counter),
                         }
