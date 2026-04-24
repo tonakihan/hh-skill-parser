@@ -122,8 +122,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Этот проект получил вклад от следующих соавторов:
 
-- **[Имя Фамилия](https://github.com/username)** — описание вклада (например, форк, исправления, дополнения)
-- **[Другой Участник](https://github.com/other)** — другой вклад
+- **[tonakihan](https://github.com/tonakihan)** — исправления и улучшения кода
 
 Если вы внесли вклад в проект, не стесняйтесь добавить себя в этот список через pull request.
 
