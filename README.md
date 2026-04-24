@@ -118,6 +118,15 @@ pandas
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Соавторы
+
+Этот проект получил вклад от следующих соавторов:
+
+- **[Имя Фамилия](https://github.com/username)** — описание вклада (например, форк, исправления, дополнения)
+- **[Другой Участник](https://github.com/other)** — другой вклад
+
+Если вы внесли вклад в проект, не стесняйтесь добавить себя в этот список через pull request.
+
 ## Автор
 
 [Виталий (@valeksan)](https://github.com/valeksan)
